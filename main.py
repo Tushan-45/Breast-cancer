@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 
 # Load trained breast cancer model
-model = load_model('models/breast_cancer_fixed.keras', compile=False)
+model = load_model('models/breast_cancer_clean.keras', compile=False)
 # Breast cancer class labels
 class_labels = ['benign', 'malignant', 'normal']
 
