@@ -39,6 +39,28 @@
 
 <body>
 
+{% if result %}
+  <h3>Result: {{ result }}</h3>
+  <p>Confidence: {{ confidence }}</p>
+
+  {% if breakdown %}
+    <h4>Probability Breakdown:</h4>
+    {% for label, score in breakdown.items() %}
+      <div>
+        <span>{{ label }}</span>
+        <progress value="{{ score }}" max="1"></progress>
+        <span>{{ "%.1f"|format(score * 100) }}%</span>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% if status == 'ambiguous' %}
+    <p style="color:orange">⚠ Result is ambiguous — please consult a radiologist.</p>
+  {% elif status == 'uncertain' %}
+    <p style="color:orange">⚠ Low confidence — result may not be reliable.</p>
+  {% endif %}
+{% endif %}
+
 <div class="container mt-5">
 
     <!-- Heading -->
