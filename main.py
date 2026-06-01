@@ -36,27 +36,52 @@ def predict_cancer(image_path):
 
     img = load_img(image_path, target_size=(IMAGE_SIZE, IMAGE_SIZE))
     img_array = img_to_array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
 
-    # Simple ultrasound validity check
+    # --- Grayscale check ---
+    # Ultrasound images are grayscale; color variance across channels should be minimal
+    r, g, b = img_array[:,:,0], img_array[:,:,1], img_array[:,:,2]
+    channel_diff = np.max([
+        np.mean(np.abs(r - g)),
+        np.mean(np.abs(g - b)),
+        np.mean(np.abs(r - b))
+    ])
+    if channel_diff > 0.05:  # Colorful image → not an ultrasound
+        return "Please upload a valid breast ultrasound image", 0
+
+    # --- Brightness / contrast check ---
     mean_pixel = np.mean(img_array)
     std_pixel = np.std(img_array)
 
-    # Reject colorful or unrelated images
-    if std_pixel < 0.05 or mean_pixel > 0.9:
+    if mean_pixel > 0.85:          # Too bright (blank/white image)
+        return "Please upload a valid breast ultrasound image", 0
+    if mean_pixel < 0.05:          # Too dark (blank/black image)
+        return "Please upload a valid breast ultrasound image", 0
+    if std_pixel < 0.08:           # No texture (flat/uniform image)
         return "Please upload a valid breast ultrasound image", 0
 
+    img_array = np.expand_dims(img_array, axis=0)
     predictions = model.predict(img_array, verbose=0)
 
     predicted_class_index = np.argmax(predictions)
-    confidence_score = np.max(predictions)
+    confidence_score = float(np.max(predictions))
 
-    # Strong rejection threshold
-    if confidence_score < 0.95:
+    # --- Use the 'unrelated' class your model already predicts ---
+    predicted_label = class_labels[predicted_class_index]
+    if predicted_label == 'unrelated':
+        return "Please upload a valid breast ultrasound image", confidence_score
+
+    # --- Entropy check: reject low-certainty predictions ---
+    # High entropy = model is unsure = likely unrelated image
+    entropy = -np.sum(predictions * np.log(predictions + 1e-9))
+    max_entropy = np.log(len(class_labels))  # worst case entropy
+    if entropy / max_entropy > 0.5:          # more than 50% uncertain
         return "Uncertain or unrelated image", confidence_score
 
-    predicted_label = class_labels[predicted_class_index]
+    # --- Confidence threshold ---
+    if confidence_score < 0.85:
+        return "Uncertain or unrelated image", confidence_score
 
+    # --- Return actual diagnosis ---
     if predicted_label == 'normal':
         return "Normal Tissue", confidence_score
     elif predicted_label == 'benign':
