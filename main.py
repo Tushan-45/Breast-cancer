@@ -38,16 +38,24 @@ def predict_cancer(image_path):
     img_array = img_to_array(img) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
+    # Simple ultrasound validity check
+    mean_pixel = np.mean(img_array)
+    std_pixel = np.std(img_array)
+
+    # Reject colorful or unrelated images
+    if std_pixel < 0.05 or mean_pixel > 0.9:
+        return "Please upload a valid breast ultrasound image", 0
+
     predictions = model.predict(img_array, verbose=0)
 
-    predicted_class_index = np.argmax(predictions, axis=1)[0]
-    confidence_score = np.max(predictions, axis=1)[0]
+    predicted_class_index = np.argmax(predictions)
+    confidence_score = np.max(predictions)
+
+    # Strong rejection threshold
+    if confidence_score < 0.95:
+        return "Uncertain or unrelated image", confidence_score
 
     predicted_label = class_labels[predicted_class_index]
-
-    # Reject low-confidence / unrelated images
-    if confidence_score < 0.80:
-        return "Invalid or unrelated image", confidence_score
 
     if predicted_label == 'normal':
         return "Normal Tissue", confidence_score
