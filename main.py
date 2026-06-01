@@ -3,6 +3,16 @@ from tensorflow.keras.models import load_model
 from keras.preprocessing.image import load_img, img_to_array
 import numpy as np
 import os
+from tensorflow.keras.layers import Dense
+
+# Patch Dense to ignore quantization_config
+old_dense_init = Dense.__init__
+
+def patched_dense_init(self, *args, **kwargs):
+    kwargs.pop("quantization_config", None)
+    old_dense_init(self, *args, **kwargs)
+
+Dense.__init__ = patched_dense_init
 
 # Initialize Flask app
 app = Flask(__name__)
