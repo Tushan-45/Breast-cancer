@@ -18,9 +18,9 @@ Dense.__init__ = patched_dense_init
 app = Flask(__name__)
 
 # Load trained breast cancer model
-model = load_model('models/breast_cancer_working.keras', compile=False)
+model = load_model('models/breast_cancer_new.keras', compile=False)
 # Breast cancer class labels
-class_labels = ['benign', 'malignant', 'normal']
+class_labels = ['benign', 'malignant', 'normal', 'unrelated']
 
 # Upload folder
 UPLOAD_FOLDER = './uploads'
