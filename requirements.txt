@@ -23,7 +23,7 @@ namex==0.1.0
 numpy==1.26.4
 opt_einsum==3.4.0
 optree==0.19.1
-keras==3.0.5
+keras==3.10.0
 ml-dtypes==0.3.2
 packaging==26.2
 pillow==12.2.0
@@ -32,7 +32,7 @@ Pygments==2.20.0
 requests==2.34.2
 rich==15.0.0
 six==1.17.0
-tensorflow-cpu==2.16.1
+tensorflow==2.19.0
 termcolor==3.3.0
 typing_extensions==4.15.0
 urllib3==2.7.0
